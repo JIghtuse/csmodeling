@@ -1,0 +1,9 @@
+CSModeling is a discrete event modeling system, includes:
+	Event monitor (files lib.*): functions simulate, schedule, cancel, clear_cal, setproc, setname, setpars
+	Model events, main program: model.c, model.h
+	Model configuration files: model.conf, conf.*
+	Statistic computing: stat.c, stat.h
+	makefile
+
+First commit has breaking task queue in model.c; needs to rewrite it.
+Initially CSModeling is a course work by Simulation Modeling.
