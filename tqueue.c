@@ -11,12 +11,12 @@ queue *queue_add_zwtask (task *ts)		/* zero waiting task */
 	return q;
 }
 
-
 queue *queue_get_first (void)
 {
 	queue *q;
 	if (!qhead) return NULL;
-	if ((qhead->tsk->nkern <= (N - Nb)) && (qhead->tsk->nmem <= (V - Vb))) {
+	if ((qhead->tsk->nkern <= (N - Nb))
+			&& (qhead->tsk->nmem <= (V - Vb))) {
 		q = qhead;
 		if (qhead->next) {
 			qhead = qhead->next;
@@ -33,13 +33,15 @@ queue *queue_get_small (void)
 {
 	queue *q = qhead, *tmp;
 	if (!q) return NULL;
-	if ((q == qtail) && (q->tsk->nkern <= (N - Nb)) && (q->tsk->nmem <= (V - Vb))) {
+	if ((q == qtail) && (q->tsk->nkern <= (N - Nb))
+			&& (q->tsk->nmem <= (V - Vb))) {
 		qhead = qtail = NULL;
 		ql--;
 		return q;
 	}
 	while (q) {
-		if ((q->tsk->nkern <= (N - Nb)) && (q->tsk->nmem <= (V - Vb))) {
+		if ((q->tsk->nkern <= (N - Nb)) &&
+				(q->tsk->nmem <= (V - Vb))) {
 			tmp = q->prev;
 			if (tmp && q != qhead) tmp->next = q->next;
 			if (q == qhead && qhead->next) {

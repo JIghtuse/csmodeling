@@ -12,7 +12,9 @@
 #define EVAL 1000
 
 unsigned int mode;
-float eps = 0.05, eval_time;
+const float eps = 0.05;
+float eval_time;
+
 stat avtime, avtimeab;
 
 int main(int argc, char *argv[]) {
@@ -59,21 +61,16 @@ void define_simtime(int mode)
 	float avg, variance;
 	eval_time = EVAL;
 	run_simulating(eval_time);
-	switch (mode) {
-		case ABS_PRIORITY: case SMALL_FIRST:
-			avg = avtimeab.sum / avtimeab.count;
-			variance = sqrt(avtimeab.sqsum / avtimeab.count - avg * avg);	
-			break;
-		case FIFO:
-			avg = avtime.sum / avtime.count;
-			variance = sqrt(avtime.sqsum / avtime.count - avg * avg);
-			break;
-		default:
-			break;
+	if (mode == ABS_PRIORITY || mode == SMALL_FIRST) {
+		avg = avtimeab.sum / avtimeab.count;
+		variance = sqrt(avtimeab.sqsum / avtimeab.count - avg * avg);	
+	} else if (mode == FIFO) {
+		avg = avtime.sum / avtime.count;
+		variance = sqrt(avtime.sqsum / avtime.count - avg * avg);
 	}
 	eval_time *= variance * variance / (avg * avg * eps * eps);
  	eval_time = (variance == 0) ? EVAL : eval_time;
- 	eval_time = (eval_time > 2000000) ? EVAL : eval_time;
+ 	eval_time = (eval_time > 200000) ? EVAL : eval_time;
 	printf("Simtime: %12.3f\t", eval_time);
 	return;
 }
@@ -99,6 +96,7 @@ void run_simulating (float simtime)
 	schedule(lastev, simtime);
 
 	simulate();
+	recalc_stat();
 	destroy_queue();
 }
 
@@ -113,7 +111,8 @@ void arrive (void) {
 	setname(arr, "Arrival");
 	schedule(arr, mt + exp_rand(d, lambda));
 
-	if ((ntask->nkern <= N - Nb) && (ntask->nmem <= V - Vb) && mode != ABS_PRIORITY) {
+	if ((ntask->nkern <= N - Nb) && (ntask->nmem <= V - Vb)
+			&& mode != ABS_PRIORITY) {
 		queue *q = queue_add_zwtask(ntask);
 		setproc(nextev, start_compute);
 		setname(nextev, "Computing");
@@ -181,7 +180,8 @@ void free_kernels (void) {
 		if (mode == SMALL_FIRST || mode == ABS_PRIORITY) {
 			check_tasks_time();
 		}
-		q = (mode == SMALL_FIRST) ? queue_get_small() : queue_get_first();
+		q = (mode == SMALL_FIRST) ?
+			queue_get_small() : queue_get_first();
 		setproc(nextevt, start_compute);
 		setpars(nextevt, (void *)q);
 		setname(nextevt, "Computing");
@@ -198,7 +198,8 @@ void free_mem (void) {
 		if (mode == SMALL_FIRST || mode == ABS_PRIORITY) {
 			check_tasks_time();
 		}
-		q = (mode == SMALL_FIRST) ? queue_get_small() : queue_get_first();
+		q = (mode == SMALL_FIRST) ?
+			queue_get_small() : queue_get_first();
 		setproc(nextev, start_compute);
 		setpars(nextev, (void *)q);
 		setname(nextev, "Computing");
@@ -225,4 +226,16 @@ void check_tasks_time (void)
 void finish (void)
 {
 	return;
+}
+
+void recalc_stat(void) {
+	queue *q = qhead;
+	while (q) {
+		if (mode == FIFO) {
+			change_stat(&avtime, mt - q->tsk->arrtime);
+		} else {
+			change_stat(&avtimeab, q->tsk->comptime + mt - q->tsk->arrtime);
+		}
+		q = q->next;
+	}
 }

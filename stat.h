@@ -2,8 +2,7 @@
 typedef struct {
 	float sum;
 	float sqsum;
-	int count;
-	int rcount;
+	unsigned int count;
 } stat;
 
 void print_stat (stat *var);

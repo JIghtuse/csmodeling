@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "conf.h"
 
-/* read config file data */
 int read_conf(void) { 
 	const int buf = 128;
 	float par_value;
@@ -19,7 +18,6 @@ int read_conf(void) {
 	return 0;
 }
 
-/* parse config file string */
 void parse_param (char *par_name, float par_value) {
 	if (!strcmp(par_name, "N")) {
 		N = par_value;

@@ -16,6 +16,3 @@ $(APP): $(patsubst %.c, %.o, $(wildcard *.c))
 	$(CC) $(CFLAGS) -c -MD $<
 
 include $(wildcard *.d)
-
-test:
-	(./$(APP))

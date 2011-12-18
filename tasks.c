@@ -3,7 +3,6 @@
 #include "tasks.h"
 #include "conf.h"
 
-
 float exp_rand (float d, float param) {
 	return d - log(KSI) / param ;
 }

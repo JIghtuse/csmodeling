@@ -7,9 +7,7 @@ typedef struct {
 	float arrtime;
 } task;
 
-
 task *newtask(void);
 
 float unif_rand(float n);
 float exp_rand(float d, float param);
-
