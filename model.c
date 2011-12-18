@@ -7,10 +7,11 @@
 #include "model.h"
 #include "conf.h"
 #include "stat.h"
+#include "tqueue.h"
 
 #define EVAL 1000
 
-unsigned int ql, Nb, Vb, mode;
+unsigned int mode;
 float eps = 0.05, eval_time;
 stat avtime, avtimeab;
 
@@ -71,7 +72,7 @@ void define_simtime(int mode)
 			break;
 	}
 	eval_time *= variance * variance / (avg * avg * eps * eps);
-/* 	eval_time = (variance == 0) ? EVAL : eval_time;*/
+ 	eval_time = (variance == 0) ? EVAL : eval_time;
  	eval_time = (eval_time > 2000000) ? EVAL : eval_time;
 	printf("Simtime: %12.3f\t", eval_time);
 	return;
@@ -101,27 +102,12 @@ void run_simulating (float simtime)
 	destroy_queue();
 }
 
-float exp_rand (float d, float param) {
-	return d - log(KSI) / param ;
-}
-
-float unif_rand (float n) {
-	return KSI * (n - 1) + 1;
-}
-
-task *newtask(void) {
-	task *tsk = (task *) malloc (sizeof(task));
-	tsk->nkern = unif_rand(kmax);
-	tsk->nmem = unif_rand(vmax);
-	tsk->comptime = exp_rand(D, mu);
-	tsk->arrtime = mt;
-	return tsk;
-}
 
 void arrive (void) {
 	event *arr = (event *) malloc (sizeof(event));
 	event *nextev = (event *) malloc (sizeof(event));
 	task *ntask = newtask();
+	ntask->arrtime = mt;
 
 	setproc(arr, arrive);
 	setname(arr, "Arrival");
@@ -139,6 +125,23 @@ void arrive (void) {
 		setpars(nextev, (void *)ntask);
 		schedule(nextev, mt);
 	}
+}
+
+void queue_add_task (void)
+{
+	queue *q = (queue *)malloc(sizeof(queue));
+	task *ts = (task *)current->params;
+	q->tsk = ts;
+	if (!qhead) {
+		q->next = q->prev = NULL;
+		qtail = qhead = q;
+	} else {
+		q->next = NULL;
+		qtail->next = q;
+		q->prev = qtail;
+		qtail = q;
+	}
+	ql++;
 }
 
 void start_compute (void) {
@@ -203,95 +206,6 @@ void free_mem (void) {
 	}
 	free(tsk);
 	tsk = NULL;
-}
-
-queue *queue_add_zwtask (task *ts)		/* zero waiting task */
-{
-	queue *q = (queue *)malloc(sizeof(queue));
-	q->tsk = ts;
-	ql++;
-	ql--;
-	return q;
-}
-
-void queue_add_task (void)
-{
-	queue *q = (queue *)malloc(sizeof(queue));
-	task *ts = (task *)current->params;
-	q->tsk = ts;
-	if (!qhead) {
-		q->next = q->prev = NULL;
-		qtail = qhead = q;
-	} else {
-		q->next = NULL;
-		qtail->next = q;
-		q->prev = qtail;
-		qtail = q;
-	}
-	ql++;
-}
-
-queue *queue_get_first (void)
-{
-	queue *q;
-	if (!qhead) return NULL;
-	if ((qhead->tsk->nkern <= (N - Nb)) && (qhead->tsk->nmem <= (V - Vb))) {
-		q = qhead;
-		if (qhead->next) {
-			qhead = qhead->next;
-		} else {
-			qhead = qtail = NULL;
-		}
-		ql--;
-		return q;
-	}
-	return NULL;
-}
-
-queue *queue_get_small (void)
-{
-	queue *q = qhead, *tmp;
-	if (!q) return NULL;
-	if ((q == qtail) && (q->tsk->nkern <= (N - Nb)) && (q->tsk->nmem <= (V - Vb))) {
-		qhead = qtail = NULL;
-		ql--;
-		return q;
-	}
-	while (q) {
-		if ((q->tsk->nkern <= (N - Nb)) && (q->tsk->nmem <= (V - Vb))) {
-			tmp = q->prev;
-			if (tmp && q != qhead) tmp->next = q->next;
-			if (q == qhead && qhead->next) {
-				qhead = qhead->next;
-				qhead->prev = NULL;
-			}
-			tmp = q->next;
-			if (tmp && q != qtail) tmp->prev = q->prev;
-			if (q == qtail && qtail->prev) {
-				qtail = qtail->prev;
-				qtail->next = NULL;
-			}
-			ql--;
-			return q;
-		}
-		q = q->next;
-	}
-	return NULL;
-}
-
-void destroy_queue(void)
-{
-	queue *q = qhead, *tmp;
-	if (!qhead) return;
-	while (q) {
-		free(q->tsk);
-		q->tsk = NULL;
-		tmp = q;
-		q = q->next;
-		free(tmp);
-		tmp = NULL;
-	}
-	qhead = qtail = NULL;
 }
 
 void check_tasks_time (void)

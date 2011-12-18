@@ -1,7 +1,7 @@
 /* file: conf.h */
 #define CONF "model.conf"
 
-unsigned int N, V, vmax, kmax;
+unsigned int N, Nb, V, Vb, vmax, kmax, ql;
 float d, lambda, D, mu, delta, Tk;
 
 int read_conf(void);
