@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "conf.h"
 #include "tqueue.h"
 
@@ -65,12 +66,14 @@ queue *queue_get_small (void)
 void destroy_queue(void)
 {
 	queue *q = qhead, *tmp;
-	if (!qhead) return;
+	task *ts;
 	while (q) {
-		free(q->tsk);
-		q->tsk = NULL;
+		ts = q->tsk;
 		tmp = q;
 		q = q->next;
+		
+		free(ts);
+		ts = NULL;
 		free(tmp);
 		tmp = NULL;
 	}

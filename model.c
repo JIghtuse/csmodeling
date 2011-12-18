@@ -18,14 +18,14 @@ float eval_time;
 stat avtime, avtimeab;
 
 int main(int argc, char *argv[]) {
-	srand(time(NULL));
+ 	srand(time(NULL));
 	
  	read_conf();
 	printf("\n\n\tFirst modeling\n");
 
-	for (Tk = 0.1; Tk <= 100; Tk += 5) {
+	for (Tk = 0.1; Tk <= 200; Tk += 10) {
 		mode = SMALL_FIRST;
- 		define_simtime(0);
+ 		define_simtime(SMALL_FIRST);
 		mode = SMALL_FIRST;
 		run_simulating(eval_time);
 		printf("Tk: %.2f\t", Tk);
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 	
 	for (V = 32; V <= 1024; V += 32) {
 		mode = FIFO;
-		define_simtime(1);
+		define_simtime(FIFO);
 		run_simulating(eval_time);
 		printf("V: %5d\t", V);
 		print_stat(&avtime);
@@ -45,9 +45,9 @@ int main(int argc, char *argv[]) {
 
 	read_conf();
 	printf("\n\n\tThird modeling\n");
-	for (N = 8; N <= 256; N += 16) {
+	for (N = 8; N <= 256; N += 8) {
 		mode = FIFO;
-		define_simtime(1);
+		define_simtime(FIFO);
 		run_simulating(eval_time);
 		printf("N: %5d\t", N);
 		print_stat(&avtime);
@@ -63,15 +63,16 @@ void define_simtime(int mode)
 	run_simulating(eval_time);
 	if (mode == ABS_PRIORITY || mode == SMALL_FIRST) {
 		avg = avtimeab.sum / avtimeab.count;
-		variance = sqrt(avtimeab.sqsum / avtimeab.count - avg * avg);	
+		variance = avtimeab.sqsum / avtimeab.count - avg * avg;	
 	} else if (mode == FIFO) {
 		avg = avtime.sum / avtime.count;
-		variance = sqrt(avtime.sqsum / avtime.count - avg * avg);
+		variance = avtime.sqsum / avtime.count - avg * avg;
 	}
-	eval_time *= variance * variance / (avg * avg * eps * eps);
+	variance++;
+	variance = sqrt(variance);
+	eval_time *= variance * variance / (double)(avg * avg * eps * eps);
  	eval_time = (variance == 0) ? EVAL : eval_time;
- 	eval_time = (eval_time > 200000) ? EVAL : eval_time;
-	printf("Simtime: %12.3f\t", eval_time);
+ 	eval_time = (eval_time > 2000000) ? EVAL : eval_time;
 	return;
 }
 
@@ -96,10 +97,9 @@ void run_simulating (float simtime)
 	schedule(lastev, simtime);
 
 	simulate();
-	recalc_stat();
+ 	recalc_stat();
 	destroy_queue();
 }
-
 
 void arrive (void) {
 	event *arr = (event *) malloc (sizeof(event));
@@ -144,7 +144,7 @@ void queue_add_task (void)
 }
 
 void start_compute (void) {
-	event *nextev = (event *)malloc(sizeof(event));
+	event *nextev;
 	queue *q = (queue *)current->params;
 	task *ts;
 	if (q == NULL) {
@@ -160,6 +160,7 @@ void start_compute (void) {
 	} else {
 		change_stat(&avtimeab, ts->comptime + mt - ts->arrtime);
 	}
+	nextev = (event *)malloc(sizeof(event));
 	setproc(nextev, free_kernels);
 	setname(nextev, "End computing; return kernels");
 	setpars(nextev, (void *)ts);
@@ -192,6 +193,8 @@ void free_kernels (void) {
 void free_mem (void) {
 	task *tsk = (task *) current->params;
 	Vb -= tsk->nmem;
+	free(tsk);
+	tsk = NULL;
 	if (ql > 0) {
 		event *nextev = (event *)malloc(sizeof(event));
 		queue *q;
@@ -205,8 +208,6 @@ void free_mem (void) {
 		setname(nextev, "Computing");
 		schedule(nextev, mt);
 	}
-	free(tsk);
-	tsk = NULL;
 }
 
 void check_tasks_time (void)

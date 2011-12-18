@@ -14,6 +14,8 @@ int read_conf(void) {
 		sscanf(str, "%s = %f", par_name, &par_value);
 		parse_param(par_name, par_value);
 	}
+	free(str);
+	free(par_name);
 	fclose(fp);
 	return 0;
 }

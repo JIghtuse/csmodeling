@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "lib.h"
 
 void setproc(event *ev, void (*proc)(void)) {
@@ -57,26 +56,31 @@ void schedule(event *ev, float t) {
 }
 
 void simulate(void) {
-	mt = 0;
+	event *tmp;
 	do {
 #ifdef TRACE
 		printf("Time: %.2f; Event: '%s'\n", current->time, current->name);
 #endif
+		tmp = current;
 		mt = current->time;
 		current->proc();
 		current = current->next;
-		free(current->prev);
+		free(tmp);
+		tmp = NULL;
 	} while (strcmp(current->name, "EndSimulate"));
 	clear_cal();
 	return;
+
 }
 
 void clear_cal (void) {
-	cancel("Arrival", 0);
-	cancel("Computing", 0);
-	cancel("Freeing memory", 0);
-	cancel("Adding to queue", 0);
-	cancel("End computing; return kernels", 0);
+	event *tmp = current;
+	while(current) {
+		tmp = current;
+		current = current->next;
+		free(tmp);
+		tmp = NULL;
+	}
 	current = NULL;
 }
 
@@ -95,7 +99,8 @@ void cancel(char *name, float t) {
 			i->next = ev->next;
 			i = ev->next;
 			i->prev = ev->prev;
-			free(ev);
+		/*	free(ev);
+			ev = NULL;*/
 			ev = i;
 		} else {
 			ev = ev->next;
@@ -105,6 +110,7 @@ void cancel(char *name, float t) {
 		i = ev->prev;
 		i->next = ev->next;
 		free(ev);
+		ev = NULL;
 	}
 	return;
 }

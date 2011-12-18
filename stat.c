@@ -19,6 +19,6 @@ void print_stat(stat *var) {
 	float avg = var->sum / var->count;
 	float variance = var->sqsum / var->count - avg * avg;
 
-	printf("Average: %10.3f\tSqrt(Variance): %.6f\n",
+	printf("Avg: %10.3f\t\tSqrt(Vrnce): %.6f\n",
 			avg, sqrt(variance));
 }
