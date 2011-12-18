@@ -1,0 +1,8 @@
+CSModeling is a discrete event modeling system, includes:
+	Event monitor: lib.c, lib.h
+	Model events, main program: model.c, model.h
+	Model configuration files: model.conf, conf.c, conf.h
+	Statistic computing: stat.c, stat.h
+	makefile
+
+Initially CSModeling is a course work by Simulation Modeling.

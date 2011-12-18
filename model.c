@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
  	read_conf();
 	printf("\n\n\tFirst modeling\n");
 
-	for (Tk = 1.0; Tk <= 100; Tk += 5) {
+	for (Tk = 0.1; Tk <= 100; Tk += 5) {
 		mode = SMALL_FIRST;
  		define_simtime(0);
 		mode = SMALL_FIRST;
