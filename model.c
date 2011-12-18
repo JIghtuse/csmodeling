@@ -234,9 +234,7 @@ void queue_add_task (void)
 queue *queue_get_first (void)
 {
 	queue *q;
-	if (!qhead) {
-		return NULL;
-	}
+	if (!qhead) return NULL;
 	if ((qhead->tsk->nkern <= (N - Nb)) && (qhead->tsk->nmem <= (V - Vb))) {
 		q = qhead;
 		if (qhead->next) {
@@ -298,30 +296,15 @@ void destroy_queue(void)
 
 void check_tasks_time (void)
 {
-	queue *q = qhead;
-	if (!q) {
+	if (!qhead) {
 		mode = SMALL_FIRST;
 		return;
 	}
-	while (q) {
-		if ((mt - q->tsk->arrtime) >= Tk) {
-			swap_tasks(q, qhead);
-			mode = ABS_PRIORITY;
-			return;
-		}
-		q = q->next;
+	if ((mt - qhead->tsk->arrtime) >= Tk) {
+		mode = ABS_PRIORITY;
+		return;
 	}
 	mode = SMALL_FIRST;
-	return;
-}
-
-void swap_tasks (queue *q1, queue *q2)
-{
-	task *tmp;
-	if (q1 == q2) return;
-	tmp = q1->tsk;
-	q1->tsk = q2->tsk;
-	q2->tsk = tmp;
 	return;
 }
 
