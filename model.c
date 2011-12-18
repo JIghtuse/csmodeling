@@ -70,7 +70,7 @@ void define_simtime(int mode)
 	}
 	variance++;
 	variance = sqrt(variance);
-	eval_time *= variance * variance / (double)(avg * avg * eps * eps);
+	eval_time *= variance * variance / (avg * avg * eps * eps);
  	eval_time = (variance == 0) ? EVAL : eval_time;
  	eval_time = (eval_time > 2000000) ? EVAL : eval_time;
 	return;
@@ -235,7 +235,8 @@ void recalc_stat(void) {
 		if (mode == FIFO) {
 			change_stat(&avtime, mt - q->tsk->arrtime);
 		} else {
-			change_stat(&avtimeab, q->tsk->comptime + mt - q->tsk->arrtime);
+			change_stat(&avtimeab,
+				q->tsk->comptime + mt - q->tsk->arrtime);
 		}
 		q = q->next;
 	}

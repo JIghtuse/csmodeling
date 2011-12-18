@@ -1,3 +1,4 @@
+/* file: tasks.h */
 #define KSI ((float)rand()/RAND_MAX)
 
 typedef struct {
