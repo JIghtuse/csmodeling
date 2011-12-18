@@ -77,7 +77,6 @@ void clear_cal (void) {
 	cancel("Freeing memory", 0);
 	cancel("Adding to queue", 0);
 	cancel("End computing; return kernels", 0);
-	mt = 0;
 	current = NULL;
 }
 

@@ -6,8 +6,8 @@
 
 
 typedef struct {
-	int nkern;
-	int nmem;
+	unsigned int nkern;
+	unsigned int nmem;
 	float comptime;
 	float arrtime;
 } task;
@@ -31,6 +31,7 @@ void free_mem (void);
 void finish (void);
 
 void check_tasks_time (void);
+void swap_tasks (queue *q1, queue *q2);
 float unif_rand(float n);
 float exp_rand(float d, float param);
 
