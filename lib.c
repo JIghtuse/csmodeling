@@ -35,7 +35,7 @@ void schedule(event *ev, float t) {
 	while ((i->time < ev->time) && i->next) {
 		i = i->next;
 	}
-	if (i->time > ev->time) {	/* paste event on previous position */
+	if (i->time > ev->time) {/* paste event on previous position */
 		j = i->prev;
 		i->prev = ev;
 		ev->next = i;
@@ -43,7 +43,7 @@ void schedule(event *ev, float t) {
 		if (j) {
 			j->next = ev;
 		}
-	} else {					/* paste event on next position */
+	} else {				/* paste event on next position */
 		j = i->next;
 		i->next = ev;
 		ev->prev = i;
@@ -59,7 +59,8 @@ void simulate(void) {
 	event *tmp;
 	do {
 #ifdef TRACE
-		printf("Time: %.2f; Event: '%s'\n", current->time, current->name);
+		printf("Time: %.2f; Event: '%s'\n",
+				current->time, current->name);
 #endif
 		tmp = current;
 		mt = current->time;
@@ -99,8 +100,6 @@ void cancel(char *name, float t) {
 			i->next = ev->next;
 			i = ev->next;
 			i->prev = ev->prev;
-		/*	free(ev);
-			ev = NULL;*/
 			ev = i;
 		} else {
 			ev = ev->next;
@@ -109,7 +108,6 @@ void cancel(char *name, float t) {
 	if ((!strcmp(name, ev->name)) && ((ev->time) >= t)) {
 		i = ev->prev;
 		i->next = ev->next;
-		free(ev);
 		ev = NULL;
 	}
 	return;

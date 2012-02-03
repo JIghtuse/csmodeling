@@ -68,8 +68,8 @@ void define_simtime(int mode)
 		avg = avtime.sum / avtime.count;
 		variance = avtime.sqsum / avtime.count - avg * avg;
 	}
-	variance++;
-	variance = sqrt(variance);
+
+
 	eval_time *= variance * variance / (avg * avg * eps * eps);
  	eval_time = (variance == 0) ? EVAL : eval_time;
  	eval_time = (eval_time > 2000000) ? EVAL : eval_time;
@@ -97,9 +97,9 @@ void run_simulating (float simtime)
 	schedule(lastev, simtime);
 
 	simulate();
- 	recalc_stat();
 	destroy_queue();
 }
+
 
 void arrive (void) {
 	event *arr = (event *) malloc (sizeof(event));
@@ -227,17 +227,4 @@ void check_tasks_time (void)
 void finish (void)
 {
 	return;
-}
-
-void recalc_stat(void) {
-	queue *q = qhead;
-	while (q) {
-		if (mode == FIFO) {
-			change_stat(&avtime, mt - q->tsk->arrtime);
-		} else {
-			change_stat(&avtimeab,
-				q->tsk->comptime + mt - q->tsk->arrtime);
-		}
-		q = q->next;
-	}
 }
